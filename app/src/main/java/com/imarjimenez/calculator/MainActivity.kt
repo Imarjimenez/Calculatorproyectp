@@ -1,11 +1,9 @@
 package com.imarjimenez.calculator
 
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -13,25 +11,36 @@ import androidx.lifecycle.ViewModelProvider
 class MainActivity : AppCompatActivity() {
 
     private lateinit var mainViewModel: MainViewModel
-    lateinit var TextNumber_one: TextView
-    lateinit var TextNumber_two: TextView
-    lateinit var TextNumber_result: TextView
-    lateinit var button_equal: Button
-    lateinit var button_delete: Button
-    lateinit var currentTextView: TextView
+    private lateinit var TextNumber_one: TextView
+    private lateinit var TextNumber_two: TextView
+    private lateinit var TextNumber_result: TextView
+    private lateinit var button_equal: Button
+    private lateinit var button_delete: Button
+    private lateinit var currentTextView: TextView
+
+    // Variable para almacenar el número ingresado actualmente
+    private var currentNumber: StringBuilder = StringBuilder()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        setTheme(R.style.Apptheme)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         mainViewModel = ViewModelProvider(this).get(MainViewModel::class.java)
 
-        // Resto del código...
+        // Inicialización de elementos de interfaz de usuario
+        button_equal = findViewById(R.id.button_equal)
+        button_delete = findViewById(R.id.button_delete)
+        TextNumber_one = findViewById(R.id.TextNumber_one)
+        TextNumber_two = findViewById(R.id.TextNumber_two)
+        TextNumber_result = findViewById(R.id.TextNumber_result)
+        currentTextView = TextNumber_one
 
+        // Configuración de observadores para el resultado
         mainViewModel.resultado.observe(this, Observer {
             TextNumber_result.text = it
         })
+
+        // Resto del código...
 
         button_equal.setOnClickListener {
             performCalculation()
@@ -41,19 +50,17 @@ class MainActivity : AppCompatActivity() {
             clearInputs()
         }
 
-        TextNumber_one.setOnClickListener { changeCurrentTextView(TextNumber_one) }
-        TextNumber_two.setOnClickListener { changeCurrentTextView(TextNumber_two) }
+        // Resto del código...
+
+        //TextNumber_one.setOnClickListener { changeCurrentTextView(TextNumber_one) }
+        //TextNumber_two.setOnClickListener { changeCurrentTextView(TextNumber_two) }
     }
 
     private fun performCalculation() {
         val numero1Text = TextNumber_one.text.toString()
         val numero2Text = TextNumber_two.text.toString()
 
-        // Verifica si hay más de un punto decimal en numero1
-        if (numero1Text.count { it == '.' } > 1 || numero2Text.count { it == '.' } > 1) {
-            Toast.makeText(this, "Al menos uno de los números tiene más de un punto decimal", Toast.LENGTH_LONG).show()
-            return  // Sale de la función sin realizar más cálculos
-        }
+        // Resto del código...
 
         mainViewModel.setNumero1(numero1Text.toDouble())
         mainViewModel.setNumero2(numero2Text.toDouble())
@@ -65,6 +72,7 @@ class MainActivity : AppCompatActivity() {
         TextNumber_one.text = ""
         TextNumber_two.text = ""
         TextNumber_result.text = ""
+        currentNumber.clear()
         mainViewModel.setOperacion(0)
     }
 
@@ -72,7 +80,6 @@ class MainActivity : AppCompatActivity() {
         when (view.id) {
             R.id.button_plus -> {
                 mainViewModel.setOperacion(1)
-                Log.d("button", "clicked")
             }
             R.id.button_minus -> {
                 mainViewModel.setOperacion(2)
@@ -85,14 +92,13 @@ class MainActivity : AppCompatActivity() {
             }
         }
         currentTextView = TextNumber_two
+
     }
 
-    private fun changeCurrentTextView(textView: TextView) {
-        // Cambiar el TextView enfocado cuando se hace clic en él
-        currentTextView = textView
+    fun onNumberButtonClick(view: View) {
+        val button = view as Button
+        currentNumber.append(button.text)
+        // Mostrar el número actualmente ingresado en el TextView correspondiente
+        currentTextView.setText(currentNumber.toString())
     }
 }
-
-
-
-

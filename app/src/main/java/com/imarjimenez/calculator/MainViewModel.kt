@@ -42,4 +42,3 @@ class MainViewModel : ViewModel() {
         _resultado.value = resultadoCalculado.toString()
     }
 }
-
