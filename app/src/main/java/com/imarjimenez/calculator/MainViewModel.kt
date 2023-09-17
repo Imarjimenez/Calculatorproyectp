@@ -1,44 +1,56 @@
 package com.imarjimenez.calculator
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
 class MainViewModel : ViewModel() {
-    private var numero1: Double = 0.0
-    private var numero2: Double = 0.0
-    private var oper: Int = 0
+    var oper: Int = 0
 
-    private val _resultado = MutableLiveData<String>()
-    val resultado: LiveData<String>
-        get() = _resultado
+    private val _errorMessage = MutableLiveData<String>()
+    val errorMessage: LiveData<String>
+        get() = _errorMessage
 
-    fun setNumero1(numero: Double) {
-        numero1 = numero
+    fun actualizarOperador(nuevoOper: Int) {
+        oper = nuevoOper
     }
 
-    fun setNumero2(numero: Double) {
-        numero2 = numero
-    }
-
-    fun setOperacion(operacion: Int) {
-        oper = operacion
-    }
-
-    fun realizarCalculo() {
-        var resultadoCalculado = 0.0
-
-        when (oper) {
-            1 -> resultadoCalculado = numero1 + numero2
-            2 -> resultadoCalculado = numero1 - numero2
-            3 -> resultadoCalculado = numero1 * numero2
-            4 -> {
-                if (numero2 != 0.0) {
-                    resultadoCalculado = numero1 / numero2
-                }
-            }
+    fun calcularResultado(numero1Text: String, numero2Text: String): Double {
+        // Verificar si al menos uno de los números tiene más de un punto decimal
+        if (numero1Text.count { it == '.' } > 1 || numero2Text.count { it == '.' } > 1) {
+             _errorMessage.postValue("Al menos uno de los números tiene más de un punto decimal")
+            return Double.NaN
+        }
+        if (numero1Text.isEmpty() || numero2Text.isEmpty()) {
+            _errorMessage.postValue( "Al menos un campo está vacío")
+            return Double.NaN
         }
 
-        _resultado.value = resultadoCalculado.toString()
+        // Convertir los números a Double
+        val numero1 = numero1Text.toDouble()
+        val numero2 = numero2Text.toDouble()
+
+        // Verificar si se intenta dividir por cero
+        if (numero2 == 0.0 && oper == 4) {
+            _errorMessage.postValue("La División entre cero no es posible")
+            return Double.NaN
+        }
+        _errorMessage.postValue(null)
+        var resultado = 0.0
+
+        // Realizar la operación según el operador seleccionado
+        when (oper) {
+            1 -> resultado = numero1 + numero2
+            2 -> resultado = numero1 - numero2
+            3 -> resultado = numero1 * numero2
+            4 -> resultado = numero1 / numero2
+        }
+
+        // Log de depuración
+        Log.d("MainViewModel", "Mensaje de depuración: $resultado")
+
+        return resultado
     }
+
 }

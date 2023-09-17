@@ -10,95 +10,101 @@ import androidx.lifecycle.ViewModelProvider
 
 class MainActivity : AppCompatActivity() {
 
+    var oper: Int = 0
+    lateinit var TextNumber_one: TextView
+    lateinit var TextNumber_two: TextView
+    lateinit var TextNumber_result: TextView
+    lateinit var errorMessageTextView: TextView
+    lateinit var button_equal: Button
+    lateinit var button_delete: Button
+    lateinit var currentTextView: TextView
     private lateinit var mainViewModel: MainViewModel
-    private lateinit var TextNumber_one: TextView
-    private lateinit var TextNumber_two: TextView
-    private lateinit var TextNumber_result: TextView
-    private lateinit var button_equal: Button
-    private lateinit var button_delete: Button
-    private lateinit var currentTextView: TextView
-
-    // Variable para almacenar el número ingresado actualmente
-    private var currentNumber: StringBuilder = StringBuilder()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        setTheme(R.style.Apptheme)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         mainViewModel = ViewModelProvider(this).get(MainViewModel::class.java)
 
-        // Inicialización de elementos de interfaz de usuario
         button_equal = findViewById(R.id.button_equal)
         button_delete = findViewById(R.id.button_delete)
         TextNumber_one = findViewById(R.id.TextNumber_one)
         TextNumber_two = findViewById(R.id.TextNumber_two)
         TextNumber_result = findViewById(R.id.TextNumber_result)
         currentTextView = TextNumber_one
+        errorMessageTextView = findViewById(R.id.errorMessageTextView)
 
-        // Configuración de observadores para el resultado
-        mainViewModel.resultado.observe(this, Observer {
-            TextNumber_result.text = it
+        val buttons = arrayOf(
+            R.id.button_zero, R.id.button_one, R.id.button_two, R.id.button_three,
+            R.id.button_four, R.id.button_five, R.id.button_six, R.id.button_seven,
+            R.id.button_eight, R.id.button_nine, R.id.button_point
+        )
+
+        for (buttonId in buttons) {
+            val button = findViewById<Button>(buttonId)
+            button.setOnClickListener { onButtonClick(button) }
+        }
+        mainViewModel.errorMessage.observe(this, Observer { errorMessage ->
+            if (errorMessage != null) {
+                // Hay un mensaje de error, muestra el TextView y establece el mensaje
+                errorMessageTextView.visibility = View.VISIBLE
+                errorMessageTextView.text = errorMessage
+            } else {
+                // No hay error, oculta el TextView
+                errorMessageTextView.visibility = View.GONE
+            }
         })
 
-        // Resto del código...
-
         button_equal.setOnClickListener {
-            performCalculation()
+            val numero1Text = TextNumber_one.text.toString()
+            val numero2Text = TextNumber_two.text.toString()
+
+
+            val resultado = mainViewModel.calcularResultado(numero1Text, numero2Text)
+
+
+
+            TextNumber_result.text = resultado.toString()
         }
 
         button_delete.setOnClickListener {
-            clearInputs()
+            TextNumber_one.text = ""
+            TextNumber_two.text = ""
+            TextNumber_result.text = ""
+            oper = 0
         }
 
-        // Resto del código...
-
-        //TextNumber_one.setOnClickListener { changeCurrentTextView(TextNumber_one) }
-        //TextNumber_two.setOnClickListener { changeCurrentTextView(TextNumber_two) }
-    }
-
-    private fun performCalculation() {
-        val numero1Text = TextNumber_one.text.toString()
-        val numero2Text = TextNumber_two.text.toString()
-
-        // Resto del código...
-
-        mainViewModel.setNumero1(numero1Text.toDouble())
-        mainViewModel.setNumero2(numero2Text.toDouble())
-
-        mainViewModel.realizarCalculo()
-    }
-
-    private fun clearInputs() {
-        TextNumber_one.text = ""
-        TextNumber_two.text = ""
-        TextNumber_result.text = ""
-        currentNumber.clear()
-        mainViewModel.setOperacion(0)
+        TextNumber_one.setOnClickListener { changeCurrentTextView(TextNumber_one) }
+        TextNumber_two.setOnClickListener { changeCurrentTextView(TextNumber_two) }
     }
 
     fun clicOperacion(view: View) {
         when (view.id) {
             R.id.button_plus -> {
-                mainViewModel.setOperacion(1)
+                mainViewModel.actualizarOperador(1)
             }
             R.id.button_minus -> {
-                mainViewModel.setOperacion(2)
+                mainViewModel.actualizarOperador(2)
             }
             R.id.button_times -> {
-                mainViewModel.setOperacion(3)
+                mainViewModel.actualizarOperador(3)
             }
             R.id.button_divide -> {
-                mainViewModel.setOperacion(4)
+                mainViewModel.actualizarOperador(4)
             }
         }
         currentTextView = TextNumber_two
 
     }
 
-    fun onNumberButtonClick(view: View) {
-        val button = view as Button
-        currentNumber.append(button.text)
-        // Mostrar el número actualmente ingresado en el TextView correspondiente
-        currentTextView.setText(currentNumber.toString())
+    private fun onButtonClick(button: Button) {
+        val buttonText = button.text.toString()
+        val currentText = currentTextView.text.toString()
+        currentTextView.text = currentText + buttonText
+    }
+
+    private fun changeCurrentTextView(textView: TextView) {
+        currentTextView = textView
     }
 }
